@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Categories{ // Категория блюд (Десерты, горячие блюда ... )
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  created       DateTime       @default(now())
+  subCategories SubCategories[]
+  product       Products[]
+}
+
+model SubCategories{ /// Подкатегории в категориях блюда (рыба птица мясо, ..... )
+  id             Int        @id @default(autoincrement())
+  category       Categories @relation(fields: [categoryId], references: [id])
+  categoryId     Int          
+  name           String
+  created        DateTime   @default(now())
+  product        Products[]
+}
+model Tags{ //Теги (Острое блюдо, К вину, к пиву, укусно ...)
+		id       Int      @id  @default(autoincrement())
+		name     String   @unique
+    product  ProductTag[]
+}
+
+model Ingredients{ // Из чего блюдо состоит
+	id      Int     @id  @default(autoincrement())
+	name    String
+	ingredientUnits  IngredientUnits @relation(fields: [unitId], references: [id])
+  unitId  Int
+  product ProductIngredient[]
+}
+
+model IngredientUnits{ // в чем измеряются ингридиенты( мл, граммы, столовые ложки ...)
+  id         Int     @id  @default(autoincrement())
+	name       String
+  ingredient Ingredients[]
+}
+
+model Products{ // Сам пункт меню
+  id               Int     @id  @default(autoincrement())
+	name             String
+  short_name       String
+  image            String
+	price            Decimal @db.Decimal(10,2)
+	weight           Int
+	calories         Int
+  category         Categories @relation(fields: [categoryId], references: [id])
+  categoryId       Int  
+  subCategory      SubCategories @relation(fields: [subCategoryId], references: [id])
+  subCategoryId    Int  
+  ingredient       ProductIngredient[]
+  tag              ProductTag[]
+}
+
+
+/// отношения Пункта меню к Ингредиентам из которых он состоит (м-м)
+model ProductIngredient{
+  product      Products     @relation(fields: [productId], references: [id])
+  productId    Int 
+  ingredient   Ingredients @relation(fields: [ingredientId], references: [id])
+  ingredientId Int 
+  created      DateTime @default(now())
+
+
+  @@id([productId, ingredientId])
+}
+
+/// отношения Пункта и тегов к нему тоже многие ко многим
+model ProductTag{
+  product      Products     @relation(fields: [productId], references: [id] , onDelete: Cascade)
+  productId    Int 
+  tag          Tags @relation(fields: [tagId], references: [id])
+  tagId        Int 
+  created      DateTime @default(now())
+
+
+  @@id([productId, tagId])
+}
