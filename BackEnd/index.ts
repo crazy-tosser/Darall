@@ -147,12 +147,12 @@ app.use(express.json())
     const tags = data.tags as number[]
 
     const product = {
-      calories: Number(data.product.calories),
+      calories: data.product.calories ? parseInt(data.product.calories) : 0,
       image:  data.product.image,
-      price: Number(data.product.price),
+      price: data.product.price ? parseInt(data.product.price): 0,
       name:  data.product.name,
       short_name: data.product.short_name,
-      weight: Number(data.product.weight),
+      weight: data.product.weight ? parseInt(data.product.weight) : 0,
       categoryId: data.product.categoryId,
       subCategoryId: 0
     }
